@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hazelcast Kelime Kutusu</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #334155;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px 35px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 1px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            width: 380px;
+        }
+        h2 {
+            color: #0f172a;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+        }
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s ease;
+            margin-bottom: 20px;
+        }
+        input:focus {
+            background-color: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        input::placeholder {
+            color: #94a3b8;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-koy {
+            background-color: #6366f1;
+            color: white;
+        }
+        .btn-koy:hover {
+            background-color: #4f46e5;
+            transform: translateY(-1px);
+        }
+        .btn-koy:active {
+            transform: translateY(0);
+        }
+        .btn-getir {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+        .btn-getir:hover {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            transform: translateY(-1px);
+        }
+        .btn-getir:active {
+            transform: translateY(0);
+        }
+        .bilgi-ekrani {
+            padding: 16px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #64748b;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+        }
+        .text-basarili { color: #10b981; font-weight: 600; }
+        .text-hata { color: #ef4444; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Hazelcast Hafızası</h2>
+
+    <input type="text" id="kelimeInput" placeholder="Kutuya bir şey yazın...">
+
+    <div class="btn-group">
+        <button class="btn-koy" onclick="kutuyaKoy()">Kutuya Kaydet</button>
+        <button class="btn-getir" onclick="kutudanGetir()">Kaydettiğini Gör</button>
+    </div>
+
+    <div class="bilgi-ekrani" id="sonucEkrani">
+        Sistem hazır, veri girişi bekleniyor...
+    </div>
+</div>
+
+<script {=strict completion}>
+    function kutuyaKoy() {
+        const veri = document.getElementById("kelimeInput").value.trim();
+        const ekran = document.getElementById("sonucEkrani");
+
+        if(!veri) {
+            ekran.innerHTML = "<span class='text-hata'>Lütfen boş bırakmayın!</span>";
+            return;
+        }
+
+        const payload = { kelime: veri };
+
+        fetch("http://localhost:8080/koy", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        })
+            .then(response => response.text())
+            .then(data => {
+                ekran.innerHTML = "RAM'e Yazıldı: <span class='text-basarili'>\"" + data + "\"</span>";
+                document.getElementById("kelimeInput").value = "";
+            })
+            .catch(error => {
+                ekran.innerHTML = "<span class='text-hata'>Arka plana bağlanılamadı!</span>";
+                console.error(error);
+            });
+    }
+
+    function kutudanGetir() {
+        const ekran = document.getElementById("sonucEkrani");
+
+        fetch("http://localhost:8080/getir")
+            .then(response => response.text())
+            .then(data => {
+                if(data) {
+                    ekran.innerHTML = "Şu an İçeride Olan: <span class='text-basarili'>\"" + data + "\"</span>";
+                } else {
+                    ekran.innerHTML = "<span class='text-hata'>Kutunun içi boş!</span>";
+                }
+            })
+            .catch(error => {
+                ekran.innerHTML = "<span class='text-hata'>Arka plana bağlanılamadı!</span>";
+                console.error(error);
+            });
+    }
+</script>
+
+</body>
+</html>
