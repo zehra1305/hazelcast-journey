@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Network - AOM Gateway</title>
+    <style>
+        :root {
+            --primary: #0A2540;
+            --bg: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #1E293B;
+            --text-muted: #64748B;
+            --success: #10B981;
+            --success-bg: #E6F4EA;
+            --error: #EF4444;
+            --error-bg: #FCE8E6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            box-sizing: border-box;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .badge {
+            background: #E0F2FE;
+            color: #0369A1;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .welcome-msg {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 13px;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Giriş kutusunun ham hali */
+        input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 12px !important;
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--primary);
+            background-color: #F8FAFC;
+            box-sizing: border-box;
+            transition: all 0.2s ease-in-out;
+            outline: none !important; /* Tarayıcının kendi çizgisini tamamen sildik */
+            -webkit-appearance: none;
+        }
+
+     z
+        input:focus {
+            outline: none !important;
+            border-color: #6366F1 !important; /* Kenarlık rengi indigo oluyor */
+            background-color: #FFFFFF !important;
+            /* Tarayıcının kalın gölgesi yerine çok ince pürüzsüz gölge */
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(10, 37, 64, 0.1);
+        }
+
+        button:hover {
+            background: #113654;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px -2px rgba(10, 37, 64, 0.15);
+        }
+
+        .result {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 1.5;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .authorized {
+            background-color: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .rejected {
+            background-color: var(--error-bg);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <span class="badge">AOM Gateway</span>
+        <h2>Şebeke Erişim Kontrolü</h2>
+        <p class="welcome-msg">"Dijital dünyaya açılan kapıda güvenliğiniz emin ellerde. Abone durumunuz merkezi kontrol katmanından sorgulanarak anında doğrulanır."</p>
+    </div>
+
+    <div class="form-group">
+        <label for="msisdn">Abonelik Numarası</label>
+        <input type="text" id="msisdn" value="5551234567" placeholder="Örn: 5551234567">
+    </div>
+
+    <button onclick="sorgulaAOM()">Sorgula ve Doğrula</button>
+
+    <div id="resultBox" class="result"></div>
+</div>
+
+<script>
+    function sorgulaAOM() {
+        const msisdn = document.getElementById('msisdn').value;
+        const resultBox = document.getElementById('resultBox');
+
+        resultBox.style.display = 'none';
+
+        fetch(`/api/status?msisdn=${msisdn}`)
+            .then(response => {
+                if(response.ok) {
+                    resultBox.className = "result authorized";
+                    resultBox.innerHTML = "✓ ERİŞİM ONAYLANDI: Abone hattı aktif. Şebeke geçiş izni başarıyla doğrulandı.";
+                } else {
+                    resultBox.className = "result rejected";
+                    resultBox.innerHTML = "✗ ERİŞİM REDDEDİLDİ: Abone kaydı bulunamadı veya hat pasif durumda. Şebeke geçişi engellendi.";
+                }
+            })
+            .catch(error => {
+                resultBox.className = "result rejected";
+                resultBox.innerHTML = "⚡ SİSTEM HATASI: Merkez API sunucusuna şu an ulaşılamıyor.";
+            })
+            .finally(() => {
+                resultBox.style.display = 'block';
+            });
+    }
+</script>
+
+</body>
+</html>
