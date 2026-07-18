@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="gun-1" />
+        <module name="banka-eft-kontrolu" />
         <module name="gun-1 (1)" />
       </profile>
       <profile name="Annotation profile for aom1" enabled="true">
@@ -23,6 +24,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="aom1" options="-parameters" />
+      <module name="banka-eft-kontrolu" options="-parameters" />
       <module name="gun-1" options="-parameters" />
       <module name="gun-1 (1)" options="-parameters" />
     </option>

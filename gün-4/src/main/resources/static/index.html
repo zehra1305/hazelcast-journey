@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banka EFT Limit Kontrolü</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { margin-top: 0; color: #2c3e50; text-align: center; font-size: 24px; margin-bottom: 20px; }
+        .limit-badge { background-color: #eccc68; color: #2c3e50; text-align: center; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 14px; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #34495e; font-weight: 600; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 2px solid #eceff1; border-radius: 8px; font-size: 16px; transition: border-color 0.3s; }
+        input:focus { border-color: #3498db; outline: none; }
+        button { width: 100%; padding: 14px; background-color: #2ecc71; border: none; color: white; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; margin-top: 10px; }
+        button:hover { background-color: #27ae60; }
+        .result { margin-top: 20px; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; display: none; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>💸 Güvenli EFT Sistemi</h2>
+    <div class="limit-badge">Günlük Maksimum Limit: 100.000,00 TL</div>
+
+    <div class="form-group">
+        <label for="iban">Alıcı IBAN</label>
+        <input type="text" id="iban" placeholder="TR0000..." value="TR560000111122223333444455">
+    </div>
+
+    <div class="form-group">
+        <label for="amount">Gönderilecek Tutar (TL)</label>
+        <input type="number" id="amount" placeholder="0.00" min="1">
+    </div>
+
+    <button onclick="gonderEft()">EFT Gönder</button>
+
+    <div id="resultBox" class="result"></div>
+</div>
+
+<script>
+    async function gonderEft() {
+        const ibanInput = document.getElementById('iban').value.trim();
+        const amountInput = document.getElementById('amount').value.trim();
+        const resultBox = document.getElementById('resultBox');
+
+        if(!ibanInput || !amountInput) {
+            alert("Lütfen tüm alanları doldurun!");
+            return;
+        }
+
+        // Değişen kısım: amount değerinin sayı tipinde gitmesini zorunlu kıldık
+        const data = {
+            iban: ibanInput,
+            amount: Number(amountInput)
+        };
+
+        try {
+            const response = await fetch('http://localhost:8080/api/eft', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const message = await response.text();
+            resultBox.style.display = "block";
+
+            if (response.ok) {
+                resultBox.className = "result success";
+                resultBox.innerText = message;
+            } else {
+                resultBox.className = "result error";
+                resultBox.innerText = message;
+            }
+
+        } catch (error) {
+            resultBox.style.display = "block";
+            resultBox.className = "result error";
+            resultBox.innerText = "Hata: Backend servisine bağlanılamadı! Projenin çalıştığından emin ol.";
+        }
+    }
+</script>
+
+</body>
+</html>
